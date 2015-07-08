@@ -23,7 +23,8 @@ public class Sink extends AbstractAudioDeviceConfig {
 	
 	protected List<String> combinedSinkNames;
 	protected List<Sink> combinedSinks;
-
+	protected boolean combinedSink = false;
+	
 	public Sink(int id, String name, Module module) {
 		super(id, name, module);
 		combinedSinkNames = new ArrayList<String>();
@@ -35,9 +36,12 @@ public class Sink extends AbstractAudioDeviceConfig {
 	}
 	
 	public boolean isCombinedSink() {
-		return combinedSinkNames.size()>0;
+		return combinedSink;
 	}
-	
+	public void setCombinedSink(boolean combinedSink) {
+		this.combinedSink = combinedSink;
+	}
+
 	public List<String> getCombinedSinkNames() {
 		return combinedSinkNames;
 	}
@@ -53,6 +57,5 @@ public class Sink extends AbstractAudioDeviceConfig {
 	public void addCombinedSink(Sink sink) {
 		if (sink!=null)
 			this.combinedSinks.add(sink);
-	}
-	
+	}	
 }

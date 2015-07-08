@@ -17,8 +17,6 @@ import java.util.regex.Pattern;
 
 import org.openhab.binding.pulseaudio.internal.PulseaudioClient;
 import org.openhab.binding.pulseaudio.internal.items.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Parsers for the pulseaudio return strings
@@ -27,11 +25,11 @@ import org.slf4j.LoggerFactory;
  * @since 1.2.0
  */
 public class Parser {
-	private static final Logger logger = LoggerFactory
-			.getLogger(Parser.class);
 	
 	private static final Pattern pattern = Pattern
 			.compile("^\\s+([a-z\\s._]+)[:=]\\s*<?\"?([^>\"]+)\"?>?$");
+	private static final Pattern emptyPayloadPattern = Pattern
+			.compile("^\\s+([a-z\\s._]+)[:=]\\s*<?\"?([^>\"]*)\"?>?$");
 	private static final Pattern volumePattern = Pattern
 			.compile("^(0|front-left|mono):(\\s[0-9]+\\s/\\s)?\\s*([0-9]+)%\\s*(/\\s[\\-0-9]+,[0-9]{2}\\sdB,\\s*)?(1|front-right)?:?(\\s[0-9]+\\s/\\s)?\\s*([0-9]+)?%?\\s*(/\\s[\\-0-9]+,[0-9]{2}\\sdB)?.*$");
 	private static final Pattern fallBackPattern = Pattern
@@ -125,6 +123,13 @@ public class Parser {
 					properties.put(matcher.group(1).trim(), matcher.group(2)
 							.trim());
 				}
+				else {
+					Matcher matcherfallback = emptyPayloadPattern.matcher(lines[j]);
+					if (matcherfallback.find()) {
+						// System.out.println(matcher.group(1).trim()+": \"\"");
+						properties.put(matcherfallback.group(1).trim(), "");
+					}
+				}
 			}
 			if (properties.containsKey("name")) {
 				Sink sink = new Sink(id, properties.get("name"),
@@ -133,7 +138,7 @@ public class Parser {
 					try {
 						sink.setState(AbstractAudioDeviceConfig.State.valueOf(properties.get("state")));
 					} catch (IllegalArgumentException e) {
-						logger.error("unhandled state "+properties.get("state")+" in sink item #"+id);
+						new Exception("unhandled state "+properties.get("state")+" in sink item #"+id).printStackTrace();;
 					}
 				}
 				if (properties.containsKey("muted")) {
@@ -148,6 +153,7 @@ public class Parser {
 					// this is a combined sink, the combined sink object
 					// should
 					// be
+					sink.setCombinedSink(true);
 					for (String sinkName : properties.get("combine.slaves")
 							.replace("\"", "").split(",")) {
 						sink.addCombinedSinkName(sinkName);
@@ -208,7 +214,7 @@ public class Parser {
 					try {
 						item.setState(AbstractAudioDeviceConfig.State.valueOf(properties.get("state")));
 					} catch (IllegalArgumentException e) {
-						logger.error("unhandled state "+properties.get("state")+" in sink-input item #"+id);
+						new Exception("unhandled state "+properties.get("state")+" in sink-input item #"+id).printStackTrace();
 					}
 				}
 				if (properties.containsKey("muted")) {
@@ -272,7 +278,7 @@ public class Parser {
 					try {
 						source.setState(AbstractAudioDeviceConfig.State.valueOf(properties.get("state")));
 					} catch (IllegalArgumentException e) {
-						logger.error("unhandled state "+properties.get("state")+" in source item #"+id);
+						new Exception("unhandled state "+properties.get("state")+" in source item #"+id).printStackTrace();
 					}
 				}
 				if (properties.containsKey("muted")) {
@@ -337,7 +343,7 @@ public class Parser {
 					try {
 						item.setState(AbstractAudioDeviceConfig.State.valueOf(properties.get("state")));
 					} catch (IllegalArgumentException e) {
-						logger.error("unhandled state "+properties.get("state")+" in source-output item #"+id);
+						new Exception("unhandled state "+properties.get("state")+" in source-output item #"+id).printStackTrace();
 					}
 				}
 				if (properties.containsKey("muted")) {
